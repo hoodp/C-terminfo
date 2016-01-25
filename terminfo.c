@@ -1,6 +1,8 @@
 #include <curses.h>
 #include <term.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #define NUM_OPTIONS 4
 
@@ -10,8 +12,9 @@ void setup();
 int getSize();
 void displaySize();
 void clearScreen();
-
-int nrows, ncolumns;
+void printArbitrary();
+int getRows();
+int getColumns();
 
 const char * options[NUM_OPTIONS] = {
   "Display # of rows & columns",
@@ -38,6 +41,9 @@ int main()
       break;
     case 2: 
       clearScreen();
+      break;
+    case 3:
+      printArbitrary();
       break;
     default:
       printf("error\n");
@@ -74,12 +80,34 @@ int validOption(int option)
 
 void displaySize()
 {
-  nrows = tigetnum("lines");
-  ncolumns = tigetnum("cols");
+  int nrows, ncolumns;
+  nrows = getRows();
+  ncolumns = getColumns();
   printf("This screen has %d rows & %d columns.\n", nrows, ncolumns);
 }
 
 void clearScreen()
 {
+  char * clear = tigetstr("clear");
+  printf("%s", clear);
+}
 
+void printArbitrary() 
+{
+  //  char * cursor = tigetstr("cuf1");
+  srand(time(NULL));
+  int nrows = getRows();
+  int random = rand();
+  int result = random % nrows;
+  printf("%d %d %d\n", nrows, random, random % nrows);
+}
+
+int getRows()
+{
+  return tigetnum("lines");
+}
+
+int getColumns()
+{
+  return tigetnum("cols");
 }
