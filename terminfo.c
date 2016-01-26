@@ -3,149 +3,157 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #define NUM_OPTIONS 5
+#define MAX_OUTPUT_SIZE 32
 
 int getOption();
 int validOption(int option);
-void setup();
-int getSize();
-void displaySize();
-void clearScreen();
-void flashScreen();
-void printArbitrary();
 int getRows();
 int getColumns();
+void displayScreenSize();
+void clearScreen();
+void flashScreen();
+void printArbitrary(int getData);
 
-const char * options[NUM_OPTIONS] = {
-  "Display # of rows & columns",
+const char *options[NUM_OPTIONS] = {
+  "Display the # of rows & columns",
   "Clear the screen",
   "Flash the screen",
-  "Print to an arbitrary location",
-  "Enter data & print to an arbitrary location"
+  "Print to arbitrary location",
+  "Enter data & print to arbitrary location"
 };
 
 int main()
 {
 
-  // connect to lcurses library
-  setup();
-  
-  // holds input value 
+  // setup the terminfo
+  setupterm(NULL, fileno(stdout), (int *) 0);
+
+  // initialize random integer generator
+  srand((unsigned int) time(NULL));
+
+  // get input option from user
   int option = getOption();
-  int valid = validOption(option);
-  while(valid) {
+
+  // loop until the option is not valid
+  while (validOption(option)) {
 
     // handle the option request
     switch (option) {
-    case 1:
-      displaySize();
+    case 0:
+      displayScreenSize();
       break;
-    case 2: 
+    case 1:
       clearScreen();
       break;
-    case 3:
+    case 2:
       flashScreen();
       break;
+    case 3:
+      printArbitrary(0);
+      break;
     case 4:
-      printArbitrary();
+      printArbitrary(1);
       break;
     default:
-      printf("error\n");
+      printf("Not a valid entry.\n");
+      exit(1);
     }
+    
+    // update the option index
     option = getOption();
-    valid = validOption(option);
   }
+
+  // delete the current terminfo
+  del_curterm(cur_term);
   return 0;
 }
 
-void setup()
+void printArbitrary(int getData)
 {
 
-  // connect to terminfo
-  setupterm(NULL, fileno(stdout), (int *)0);
+  // generate a random row & column index with the current window 
+  int row = rand() % getRows();
+  int column = rand() % getColumns();
 
-  // setup random number generator
-  srand((unsigned int) time(NULL));
-}
+  // save the original cursor address
+  tigetstr("sc");
 
-int getOption() 
-{
-  
-  // print each option
-  size_t i;
-  for (i = 0; i < sizeof(options) / sizeof(options[0]); i++) {
-    printf("(%lu): %s\n", i + 1, options[i]);
+  // generate new cursor address with random values as parameters
+  char *mvCursor = tparm(tigetstr("cup"), row, column);
+
+  // stores the output string
+  char *output = malloc(MAX_OUTPUT_SIZE);
+
+  // check if user input is needed
+  if (getData) {
+
+    // ask the user for input & assign to output
+    printf("Enter data: ");
+    scanf("%s", output);
+  } else {
+
+    // set output to the # of rows & columns the cursor was moved
+    sprintf(output, "Cursor moved %d rows & %d columns", row, column);
   }
+
+  // move the cursor
+  putp(mvCursor);
+
+  // print the output
+  printf("%s\n", output);
+  free(output);
+
+  // move the cursor back to its original location 
+  putp(tigetstr("rc"));
   
-  // get input from the user & return the value 
-  int in;
-  scanf("%d", &in);
-  return in;
-}
-
-int validOption(int option)
-{
-  return option > 0 && option <= NUM_OPTIONS;
-}
-
-void displaySize()
-{
-  int nrows, ncolumns;
-  nrows = getRows();
-  ncolumns = getColumns();
-  printf("This screen has %d rows & %d columns.\n", nrows, ncolumns);
-}
-
-void clearScreen()
-{
-  char *clear = tigetstr("clear");
-  putp(clear);
 }
 
 void flashScreen()
 {
-  char *flash = tigetstr("flash");
-  putp(flash);
+  putp(tigetstr("flash"));
 }
 
-void printArbitrary() 
+void clearScreen()
 {
-
-  // clear the screen so the text is visible
-  //  clearScreen();
-  tigetstr("cvvis");
-
-  // setup left & right cursors
-  char * cursorRight = tigetstr("cuf1");
-  char * cursorDown = tigetstr("cud1");
-  
-  // generate a random number of spaces to move right
-  int nRight = rand() % getColumns();
-
-  // random number of rows to move down
-  int nDown = rand() % getRows();
-
-  int i;
-
-  // move to cursor right nRight times
-  for (i = 0; i < nRight; i++) {
-    printf("%s", cursorRight);
-  }
-
-  // move the cursor up nDown times
-  for (i = 0; i < nDown; i++) {
-    printf("%s", cursorDown);
-  }
-  printf("%d times right cursor - %d times down cursor\n", nRight, nDown);
+  putp(tigetstr("clear"));
 }
 
-int getRows()
+int getRows() 
 {
   return tigetnum("lines");
 }
 
-int getColumns()
+int getColumns() 
 {
   return tigetnum("cols");
+}
+
+void displayScreenSize() 
+{
+  printf("This screen has %d rows & %d columns.\n", getRows(), getColumns());
+}
+
+int validOption(int option)
+{
+  return option >= 0 && option < NUM_OPTIONS;
+}
+
+int getOption()
+{
+  
+  // print each option
+  size_t i;
+  for (i = 0; i < NUM_OPTIONS; i++) {
+    printf("(%lu): %s\n", i + 1, options[i]);
+  }
+
+  // get the input from the user & return the value 
+  int in;
+  scanf("%d", &in);
+
+  // substract one from the input or return -1  
+  return in == 0 ? -1 : in - 1;
 }
