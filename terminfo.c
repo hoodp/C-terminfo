@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define NUM_OPTIONS 4
+#define NUM_OPTIONS 5
 
 int getOption();
 int validOption(int option);
@@ -12,6 +12,7 @@ void setup();
 int getSize();
 void displaySize();
 void clearScreen();
+void flashScreen();
 void printArbitrary();
 int getRows();
 int getColumns();
@@ -19,6 +20,7 @@ int getColumns();
 const char * options[NUM_OPTIONS] = {
   "Display # of rows & columns",
   "Clear the screen",
+  "Flash the screen",
   "Print to an arbitrary location",
   "Enter data & print to an arbitrary location"
 };
@@ -43,6 +45,9 @@ int main()
       clearScreen();
       break;
     case 3:
+      flashScreen();
+      break;
+    case 4:
       printArbitrary();
       break;
     default:
@@ -94,17 +99,17 @@ void displaySize()
 
 void clearScreen()
 {
-  char * clear = tigetstr("clear");
-  printf("%s", clear);
+  char *clear = tigetstr("clear");
+  putp(clear);
 }
 
-void printArbitrary()
+void flashScreen()
 {
-  char *flash = tigetstr("vb");
-  printf("%s", flash);
+  char *flash = tigetstr("flash");
+  putp(flash);
 }
 
-void printArbitrary2() 
+void printArbitrary() 
 {
 
   // clear the screen so the text is visible
