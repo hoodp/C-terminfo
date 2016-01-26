@@ -51,11 +51,17 @@ int main()
     option = getOption();
     valid = validOption(option);
   }
+  return 0;
 }
 
 void setup()
 {
+
+  // connect to terminfo
   setupterm(NULL, fileno(stdout), (int *)0);
+
+  // setup random number generator
+  srand((unsigned int) time(NULL));
 }
 
 int getOption() 
@@ -92,14 +98,41 @@ void clearScreen()
   printf("%s", clear);
 }
 
-void printArbitrary() 
+void printArbitrary()
 {
-  //  char * cursor = tigetstr("cuf1");
-  srand(time(NULL));
-  int nrows = getRows();
-  int random = rand();
-  int result = random % nrows;
-  printf("%d %d %d\n", nrows, random, random % nrows);
+  char *flash = tigetstr("vb");
+  printf("%s", flash);
+}
+
+void printArbitrary2() 
+{
+
+  // clear the screen so the text is visible
+  //  clearScreen();
+  tigetstr("cvvis");
+
+  // setup left & right cursors
+  char * cursorRight = tigetstr("cuf1");
+  char * cursorDown = tigetstr("cud1");
+  
+  // generate a random number of spaces to move right
+  int nRight = rand() % getColumns();
+
+  // random number of rows to move down
+  int nDown = rand() % getRows();
+
+  int i;
+
+  // move to cursor right nRight times
+  for (i = 0; i < nRight; i++) {
+    printf("%s", cursorRight);
+  }
+
+  // move the cursor up nDown times
+  for (i = 0; i < nDown; i++) {
+    printf("%s", cursorDown);
+  }
+  printf("%d times right cursor - %d times down cursor\n", nRight, nDown);
 }
 
 int getRows()
