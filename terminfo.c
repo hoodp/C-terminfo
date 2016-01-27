@@ -4,8 +4,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <string.h>
 
-#define NUM_OPTIONS 5
+#define NUM_OPTIONS 6
 #define MAX_OUTPUT_SIZE 32
 
 int getOption();
@@ -16,13 +17,15 @@ void displayScreenSize();
 void clearScreen();
 void flashScreen();
 void printArbitrary(int getData);
+void printOptions();
 
 const char *options[NUM_OPTIONS] = {
   "Display the # of rows & columns",
   "Clear the screen",
   "Flash the screen",
   "Print to arbitrary location",
-  "Enter data & print to arbitrary location"
+  "Enter data & print to arbitrary location",
+  "Show all options"
 };
 
 int main()
@@ -35,7 +38,7 @@ int main()
   srand((unsigned int) time(NULL));
 
   // get input option from user
-  int option = getOption();
+  int option = getOption(1);
 
   // loop until the option is not valid
   while (validOption(option)) {
@@ -57,13 +60,16 @@ int main()
     case 4:
       printArbitrary(1);
       break;
+    case 5:
+      option = getOption(1);
+      continue;
     default:
       printf("Not a valid entry.\n");
       exit(1);
     }
     
     // update the option index
-    option = getOption();
+    option = getOption(0);
   }
 
   // delete the current terminfo
@@ -78,12 +84,6 @@ void printArbitrary(int getData)
   int row = rand() % getRows();
   int column = rand() % getColumns();
 
-  // save the original cursor address
-  tigetstr("sc");
-
-  // generate new cursor address with random values as parameters
-  char *mvCursor = tparm(tigetstr("cup"), row, column);
-
   // stores the output string
   char *output = malloc(MAX_OUTPUT_SIZE);
 
@@ -92,12 +92,21 @@ void printArbitrary(int getData)
 
     // ask the user for input & assign to output
     printf("Enter data: ");
-    scanf("%s", output);
+    output = "testing";
   } else {
 
     // set output to the # of rows & columns the cursor was moved
     sprintf(output, "Cursor moved %d rows & %d columns", row, column);
   }
+
+  // substract the size of the output from the column width
+  column -= strlen(output);
+
+  // save the current cursor position
+  putp(tigetstr("sc"));
+
+  // generate new cursor address with random values as parameters
+  char *mvCursor = tparm(tigetstr("cup"), row, column);
 
   // move the cursor
   putp(mvCursor);
@@ -106,9 +115,7 @@ void printArbitrary(int getData)
   printf("%s\n", output);
   free(output);
 
-  // move the cursor back to its original location 
   putp(tigetstr("rc"));
-  
 }
 
 void flashScreen()
@@ -141,14 +148,11 @@ int validOption(int option)
   return option >= 0 && option < NUM_OPTIONS;
 }
 
-int getOption()
+int getOption(int showAll)
 {
-  
-  // print each option
-  size_t i;
-  for (i = 0; i < NUM_OPTIONS; i++) {
-    printf("(%lu): %s\n", i + 1, options[i]);
-  }
+
+  // show the list of options
+  printOptions(showAll);
 
   // get the input from the user & return the value 
   int in;
@@ -156,4 +160,21 @@ int getOption()
 
   // substract one from the input or return -1  
   return in == 0 ? -1 : in - 1;
+}
+
+void printOptions(int showAll)
+{
+  
+  // check of all options should be shown
+  if (showAll) {
+
+    // print each option value
+    size_t i;
+    for (i = 0; i < NUM_OPTIONS; i++) {
+      printf("(%lu): %s\n", i + 1, options[i]);
+    }
+  } 
+
+  // show range of options
+  printf("[1-6]: ");
 }
