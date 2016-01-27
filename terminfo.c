@@ -92,7 +92,7 @@ void printArbitrary(int getData)
 
     // ask the user for input & assign to output
     printf("Enter data: ");
-    output = "testing";
+    scanf("%s", output);
   } else {
 
     // set output to the # of rows & columns the cursor was moved
