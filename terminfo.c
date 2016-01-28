@@ -1,9 +1,9 @@
 /*****************************************************************************
-The following program provides control of some terminal features by using the
-terminfo API. 
-
-@author Paul Hood
-@version January 28, 2016
+* The following program provides control of some terminal features by using the
+* terminfo API. 
+*
+* @author Paul Hood
+* @version January 28, 2016
 *****************************************************************************/
 #include <curses.h>
 #include <term.h>
@@ -37,10 +37,10 @@ const char *options[NUM_OPTIONS] = {
 };
 
 /******************************************************************************
-Controls the flow of the program. It retrieves input from the user until an
-invalid option is entered.
-@return The exit status of the program. 
-/*****************************************************************************/
+* Controls the flow of the program. It retrieves input from the user until an
+* invalid option is entered.
+* @return The exit status of the program. 
+******************************************************************************/
 int main()
 {
 
@@ -90,6 +90,11 @@ int main()
 	return 0;
 }
 
+/******************************************************************************
+* Prints to an arbitary location on the screen. 
+* @param getData Boolean value to print the cursor location or to get data 
+* from the user.	 
+******************************************************************************/
 void printArbitrary(int getData)
 {
 
@@ -109,7 +114,7 @@ void printArbitrary(int getData)
 	} else {
 
 		// set output to the # of rows & columns the cursor was moved
-		sprintf(output, "Cursor moved %d rows & %d columns", row, column);
+		sprintf(output, "Cursor at row %d rows & column %d", row, column);
 	}
 
 	// substract the size of the output from the column width
@@ -132,61 +137,61 @@ void printArbitrary(int getData)
 }
 
 /******************************************************************************
-Flashes the screen. 
-/*****************************************************************************/
+* Flashes the screen. 
+******************************************************************************/
 void flashScreen()
 {
 	putp(tigetstr("flash"));
 }
 
 /******************************************************************************
-Clears the screen.
-/*****************************************************************************/
+* Clears the screen.
+******************************************************************************/
 void clearScreen()
 {
 	putp(tigetstr("clear"));
 }
 
 /******************************************************************************
-Retrieves the number of rows in the terminal.
-@return Integer value of the number of rows.
-/*****************************************************************************/
+* Retrieves the number of rows in the terminal.
+* @return Integer value of the number of rows.
+******************************************************************************/
 int getRows() 
 {
 	return tigetnum("lines");
 }
 
 /******************************************************************************
-Retrieves the number of columns in the terminal.
-@return Integer value of the number of columns.
-/*****************************************************************************/
+* Retrieves the number of columns in the terminal.
+* @return Integer value of the number of columns.
+******************************************************************************/
 int getColumns() 
 {
 	return tigetnum("cols");
 }
 
 /******************************************************************************
-Prints the screen size by calling the getRows() and getColumns() functions. 
-/*****************************************************************************/
+* Prints the screen size by calling the getRows() and getColumns() functions. 
+******************************************************************************/
 void displayScreenSize() 
 {
 	printf("This screen has %d rows & %d columns.\n", getRows(), getColumns());
 }
 
 /******************************************************************************
-Determines if an option is within an accepted range.
-@param option Index from the user.
-@return True if the index is within the range of options. 
-/*****************************************************************************/
+* Determines if an option is within an accepted range.
+* @param option Index from the user.
+* @return True if the index is within the range of options. 
+******************************************************************************/
 int validOption(int option)
 {
 	return option >= 0 && option < NUM_OPTIONS;
 }
 
 /******************************************************************************
-Prints all of the available options that the user can choose from.
-@param showAll Passed to printOptions method to output the list of options. 
-/*****************************************************************************/
+* Prints all of the available options that the user can choose from.
+* @param showAll Passed to printOptions method to output the list of options. 
+******************************************************************************/
 int getOption(int showAll)
 {
 
@@ -202,9 +207,9 @@ int getOption(int showAll)
 }
 
 /******************************************************************************
-Prints all of the available options that the user can choose from.
-@param showAll Show list of options or just the range.
-/*****************************************************************************/
+* Prints all of the available options that the user can choose from.
+* @param showAll Show list of options or just the range.
+******************************************************************************/
 void printOptions(int showAll)
 {
   
